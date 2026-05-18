@@ -163,6 +163,18 @@
     to { text-shadow: 0 0 20px #ff7242, 0 0 30px #ffa842; }
   }
 </style>
+<style>
+  .epoch-list { display: flex; flex-direction: column; gap: 14px; padding: 5px 10px; }
+  .era-group { display: flex; flex-direction: column; gap: 4px; }
+  .era-title { font-size: 11px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 2px; }
+  .epoch-link { display: flex !important; justify-content: space-between; align-items: center; padding: 6px 12px; color: var(--font-color) !important; text-decoration: none !important; font-size: 14px; border-radius: 8px; background: var(--light-grey); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border: 1px solid transparent; }
+  .epoch-link small { font-size: 10px; color: #bbb; font-family: 'Courier New', Courier, monospace; }
+  .epoch-link:hover { background: #eefaf5; color: #41b883 !important; border-color: #41b883; transform: translateX(4px); }
+  .epoch-link.active { background: #fff5f5; color: #ff6b6b !important; border: 1px solid #ff6b6b; font-weight: bold; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15); }
+  .epoch-link.active small { color: #ff6b6b; opacity: 0.7; }
+  .fa-fire-alt { animation: flicker 1s infinite alternate; }
+  @keyframes flicker { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.2); opacity: 1; text-shadow: 0 0 8px rgba(255,107,107,0.5); } }
+</style>
 <meta name="generator" content="Hexo 8.1.2"></head><body><div class="page type-categories" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">自然理科</span></a></span><div id="menus"></div></nav><div id="page-site-info"><h1 id="site-title">地质学</h1></div></header><main class="layout hide-aside" id="content-inner"><div id="page"><div class="category-lists"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/">古生物学</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%9C%B0%E8%B4%A8%E5%AD%A6/">地质学</a><span class="category-list-count">1</span></li></ul></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 小风ventus</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/yremp/yremp-js@1.5/sakura.js"></script><script>
   (function(){
     // 1. 创建倒计时容器
