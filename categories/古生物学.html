@@ -175,7 +175,153 @@
   .fa-fire-alt { animation: flicker 1s infinite alternate; }
   @keyframes flicker { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.2); opacity: 1; text-shadow: 0 0 8px rgba(255,107,107,0.5); } }
 </style>
-<meta name="generator" content="Hexo 8.1.2"></head><body><div class="page type-categories" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">自然理科</span></a></span><div id="menus"></div></nav><div id="page-site-info"><h1 id="site-title">古生物学</h1></div></header><main class="layout hide-aside" id="content-inner"><div id="page"><div class="category-lists"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/">古生物学</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%9C%B0%E8%B4%A8%E5%AD%A6/">地质学</a><span class="category-list-count">1</span></li></ul></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 小风ventus</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/yremp/yremp-js@1.5/sakura.js"></script><script>
+<style>
+  .global-evolution-timeline {
+    margin: 20px 0 28px;
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 14px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .global-evolution-timeline::-webkit-scrollbar { display: none; }
+
+  .timeline-scroll-container {
+    display: flex;
+    align-items: center;
+    min-width: 860px;
+    padding: 10px 0;
+  }
+
+  .timeline-node-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .node-dot {
+    width: 11px;
+    height: 11px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 50%;
+    transition: all 0.4s ease;
+    z-index: 2;
+  }
+
+  .timeline-connector-line {
+    flex-grow: 1;
+    height: 2.5px;
+    background: rgba(255,255,255,0.15);
+    margin: 0 -8px;
+    transform: translateY(-14px);
+    z-index: 1;
+  }
+
+  .node-name {
+    font-size: 13.5px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.8);
+  }
+  .node-label {
+    font-size: 9.8px;
+    color: rgba(255,255,255,0.45);
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.3px;
+  }
+
+  .timeline-node-item.active .node-dot {
+    background: #ff4757;
+    box-shadow: 0 0 16px #ff4757;
+    transform: scale(1.65);
+    animation: nodePulse 2.2s infinite alternate;
+  }
+  .timeline-node-item.active .node-name {
+    color: #ff4757;
+    font-weight: 700;
+  }
+
+  @keyframes nodePulse {
+    from { filter: brightness(1); }
+    to { filter: brightness(1.45); }
+  }
+</style>
+
+<script>
+  (function() {
+    function initTimeline() {
+      let currentEpoch = '';
+
+      // 从 front-matter 获取 epoch
+      const metaEpoch = document.querySelector('meta[name="epoch"]')?.getAttribute('content');
+      if (metaEpoch) currentEpoch = metaEpoch.trim();
+
+      // 备用：从标题提取
+      if (!currentEpoch) {
+        const titleEl = document.querySelector('h1.post-title, .post-title');
+        if (titleEl) {
+          const match = titleEl.textContent.match(/(冥古宙|太古宙|元古宙|寒武纪|奥陶纪|志留纪|泥盆纪|石炭纪|二叠纪|中生代|新生代)/);
+          if (match) currentEpoch = match[1];
+        }
+      }
+
+      if (!currentEpoch) {
+        console.log('%c【Timeline】未检测到纪元，请在文章 front-matter 中添加 epoch: 寒武纪', 'color:#ff6b6b');
+        return;
+      }
+
+      // 插入位置（适配 5.5.4）
+      let target = document.querySelector('.post-meta') || 
+                   document.querySelector('.post-title')?.parentElement ||
+                   document.querySelector('#post-info') ||
+                   document.querySelector('.article-header');
+
+      if (!target || document.querySelector('.global-evolution-timeline')) return;
+
+      const epochs = [
+        { name: '冥古宙', label: 'Hadean' },
+        { name: '太古宙', label: 'Archean' },
+        { name: '元古宙', label: 'Proterozoic' },
+        { name: '寒武纪', label: 'Cambrian' },
+        { name: '奥陶纪', label: 'Ordovician' },
+        { name: '志留纪', label: 'Silurian' },
+        { name: '泥盆纪', label: 'Devonian' },
+        { name: '石炭纪', label: 'Carboniferous' },
+        { name: '二叠纪', label: 'Permian' },
+        { name: '中生代', label: 'Mesozoic' },
+        { name: '新生代', label: 'Cenozoic' }
+      ];
+
+      let html = '<div class="global-evolution-timeline"><div class="timeline-scroll-container">';
+
+      epochs.forEach((ep, i) => {
+        const active = (ep.name === currentEpoch) ? ' active' : '';
+        html += `
+          <div class="timeline-node-item${active}">
+            <div class="node-dot"></div>
+            <div>
+              <div class="node-name">${ep.name}</div>
+              <div class="node-label">${ep.label}</div>
+            </div>
+          </div>
+        `;
+        if (i < epochs.length - 1) html += '<div class="timeline-connector-line"></div>';
+      });
+
+      html += '</div></div>';
+
+      target.insertAdjacentHTML('afterend', html);
+    }
+
+    window.addEventListener('load', () => setTimeout(initTimeline, 800));
+    document.addEventListener('pjax:complete', () => setTimeout(initTimeline, 600));
+  })();
+</script>
+<meta name="generator" content="Hexo 8.1.2"></head><body><div class="page type-categories" id="body-wrap"><header class="not-home-page" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">自然理科</span></a></span><div id="menus"></div></nav><div id="page-site-info"><h1 id="site-title">古生物学</h1></div></header><main class="layout hide-aside" id="content-inner"><div id="page"><div class="category-lists"><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/">古生物学</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E5%9C%B0%E8%B4%A8%E5%AD%A6/">地质学</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/">生命起源</a><span class="category-list-count">1</span></li></ul></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 小风ventus</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/yremp/yremp-js@1.5/sakura.js"></script><script src="/js/snow.js"></script>#雪花<script>
   (function(){
     // 1. 创建倒计时容器
     var countdownEl = document.createElement('div');
