@@ -147,194 +147,14 @@
   isHighlightShrink: false,
   isToc: false,
   pageType: 'home'
-}</script><style>
-  #custom-countdown {
-    position: relative;
-    display: inline-block;
-    margin-top: 15px;
-    padding: 8px 20px;
-    background: rgba(0, 0, 0, 0.4); /* 半透明黑 */
-    backdrop-filter: blur(5px);    /* 毛玻璃效果 */
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: #ff7242;                /* 霓虹橙，和你 Pixiv 图片色调搭吗？ */
-    font-family: 'STHeiti', sans-serif;
-    font-weight: bold;
-    text-shadow: 0 0 10px #ff7242; /* 霓虹发光 */
-    font-size: 1.2rem;
-    animation: countdown-glow 2s infinite alternate;
-  }
-  @keyframes countdown-glow {
-    from { text-shadow: 0 0 5px #ff7242; }
-    to { text-shadow: 0 0 20px #ff7242, 0 0 30px #ffa842; }
-  }
-</style>
-<style>
-  .epoch-list { display: flex; flex-direction: column; gap: 14px; padding: 5px 10px; }
-  .era-group { display: flex; flex-direction: column; gap: 4px; }
-  .era-title { font-size: 11px; font-weight: bold; color: #999; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; border-bottom: 1px solid #eee; padding-bottom: 2px; }
-  .epoch-link { display: flex !important; justify-content: space-between; align-items: center; padding: 6px 12px; color: var(--font-color) !important; text-decoration: none !important; font-size: 14px; border-radius: 8px; background: var(--light-grey); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); border: 1px solid transparent; }
-  .epoch-link small { font-size: 10px; color: #bbb; font-family: 'Courier New', Courier, monospace; }
-  .epoch-link:hover { background: #eefaf5; color: #41b883 !important; border-color: #41b883; transform: translateX(4px); }
-  .epoch-link.active { background: #fff5f5; color: #ff6b6b !important; border: 1px solid #ff6b6b; font-weight: bold; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.15); }
-  .epoch-link.active small { color: #ff6b6b; opacity: 0.7; }
-  .fa-fire-alt { animation: flicker 1s infinite alternate; }
-  @keyframes flicker { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.2); opacity: 1; text-shadow: 0 0 8px rgba(255,107,107,0.5); } }
-</style>
-<style>
-  .global-evolution-timeline {
-    margin: 20px 0 28px;
-    padding: 16px 20px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 14px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .global-evolution-timeline::-webkit-scrollbar { display: none; }
-
-  .timeline-scroll-container {
-    display: flex;
-    align-items: center;
-    min-width: 860px;
-    padding: 10px 0;
-  }
-
-  .timeline-node-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 7px;
-    flex-shrink: 0;
-    position: relative;
-  }
-
-  .node-dot {
-    width: 11px;
-    height: 11px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 50%;
-    transition: all 0.4s ease;
-    z-index: 2;
-  }
-
-  .timeline-connector-line {
-    flex-grow: 1;
-    height: 2.5px;
-    background: rgba(255,255,255,0.15);
-    margin: 0 -8px;
-    transform: translateY(-14px);
-    z-index: 1;
-  }
-
-  .node-name {
-    font-size: 13.5px;
-    font-weight: 500;
-    color: rgba(255,255,255,0.8);
-  }
-  .node-label {
-    font-size: 9.8px;
-    color: rgba(255,255,255,0.45);
-    font-family: 'Courier New', monospace;
-    letter-spacing: 0.3px;
-  }
-
-  .timeline-node-item.active .node-dot {
-    background: #ff4757;
-    box-shadow: 0 0 16px #ff4757;
-    transform: scale(1.65);
-    animation: nodePulse 2.2s infinite alternate;
-  }
-  .timeline-node-item.active .node-name {
-    color: #ff4757;
-    font-weight: 700;
-  }
-
-  @keyframes nodePulse {
-    from { filter: brightness(1); }
-    to { filter: brightness(1.45); }
-  }
-</style>
-
-<script>
-  (function() {
-    function initTimeline() {
-      let currentEpoch = '';
-
-      // 从 front-matter 获取 epoch
-      const metaEpoch = document.querySelector('meta[name="epoch"]')?.getAttribute('content');
-      if (metaEpoch) currentEpoch = metaEpoch.trim();
-
-      // 备用：从标题提取
-      if (!currentEpoch) {
-        const titleEl = document.querySelector('h1.post-title, .post-title');
-        if (titleEl) {
-          const match = titleEl.textContent.match(/(冥古宙|太古宙|元古宙|寒武纪|奥陶纪|志留纪|泥盆纪|石炭纪|二叠纪|中生代|新生代)/);
-          if (match) currentEpoch = match[1];
-        }
-      }
-
-      if (!currentEpoch) {
-        console.log('%c【Timeline】未检测到纪元，请在文章 front-matter 中添加 epoch: 寒武纪', 'color:#ff6b6b');
-        return;
-      }
-
-      // 插入位置（适配 5.5.4）
-      let target = document.querySelector('.post-meta') || 
-                   document.querySelector('.post-title')?.parentElement ||
-                   document.querySelector('#post-info') ||
-                   document.querySelector('.article-header');
-
-      if (!target || document.querySelector('.global-evolution-timeline')) return;
-
-      const epochs = [
-        { name: '冥古宙', label: 'Hadean' },
-        { name: '太古宙', label: 'Archean' },
-        { name: '元古宙', label: 'Proterozoic' },
-        { name: '寒武纪', label: 'Cambrian' },
-        { name: '奥陶纪', label: 'Ordovician' },
-        { name: '志留纪', label: 'Silurian' },
-        { name: '泥盆纪', label: 'Devonian' },
-        { name: '石炭纪', label: 'Carboniferous' },
-        { name: '二叠纪', label: 'Permian' },
-        { name: '中生代', label: 'Mesozoic' },
-        { name: '新生代', label: 'Cenozoic' }
-      ];
-
-      let html = '<div class="global-evolution-timeline"><div class="timeline-scroll-container">';
-
-      epochs.forEach((ep, i) => {
-        const active = (ep.name === currentEpoch) ? ' active' : '';
-        html += `
-          <div class="timeline-node-item${active}">
-            <div class="node-dot"></div>
-            <div>
-              <div class="node-name">${ep.name}</div>
-              <div class="node-label">${ep.label}</div>
-            </div>
-          </div>
-        `;
-        if (i < epochs.length - 1) html += '<div class="timeline-connector-line"></div>';
-      });
-
-      html += '</div></div>';
-
-      target.insertAdjacentHTML('afterend', html);
-    }
-
-    window.addEventListener('load', () => setTimeout(initTimeline, 800));
-    document.addEventListener('pjax:complete', () => setTimeout(initTimeline, 600));
-  })();
-</script>
-<meta name="generator" content="Hexo 8.1.2"></head><body><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url(/img/cover.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">自然理科</span></a></span><div id="menus"></div></nav><div id="site-info"><h1 id="site-title">自然理科</h1><div id="site_social_icons"><a class="social-icon" href="https://space.bilibili.com/1362301665" target="_blank" title="fab fa-bilibili"><i class="Bilibili"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/24/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/" title="生命起源">生命起源</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-23T17:11:56.000Z" title="Created 2026-05-24 01:11:56">2026-05-24</time></span></div><div class="content">前言如果说生物学是一顶皇冠，那么生命起源（Abiogenesis或origin of life）可以说是其中最耀眼的明珠。这一话题贯穿了人类整个科学史，从古代朴素的猜想到现代生物化学实验的探索，经历了漫长而激烈的争论。 生命起源理论的发展过程 生命起源理论的发展大致可分为2个转变： （1）自然发生说（无生源论，自生论）——生源说 （2）原始汤假说——碱性热液喷口假说  自然发生说（无生源论，自生论，spontaneous generation）古人最早提出的生命起源思想是自然发生说。如，先秦时期《礼记·月令》记载“大暑之日，腐草为萤”，《荀子·劝学》记载“肉腐出虫，鱼枯生蠹”，古希腊“博学”家亚里士多德（Aristotle）所说“鱼出泥砂”。23这一观点认为，某些动物可以从腐烂的有机物、无机物或特定环境中直接、快速地自然产生。 总得来说这一思想的核心是：生命可以直接从非生命物质中自发产生。1 自然发生说在中世纪和文艺复兴时期依然长期占据主导地位，被视为“常识”，甚至被宗教和哲学所强化。直到17-19世纪，实验科学的兴起才开始对其发起系统挑战。    图片：自然发生说可信度的变迁。...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/23/%E3%80%8A%E9%9B%B6%E5%8F%B7%E6%AE%8B%E5%93%8D%EF%BC%9A%E5%BE%AE%E5%B0%98%E7%BA%AA%E5%85%833%EF%BC%9A%E7%A9%BF%E8%B6%8A%E4%BA%8C%E5%8F%A0%E7%BA%AA%E3%80%8B/" title="《零号残响：微尘纪元3：穿越二叠纪》">《零号残响：微尘纪元3：穿越二叠纪》</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-22T17:36:38.000Z" title="Created 2026-05-23 01:36:38">2026-05-23</time></span></div><div class="content">📍 第一站：华南热带微大陆（东亚启程点） 空间坐标： 赤道附近、古特提斯洋东侧的孤岛（即今天的中国浙江长兴、四川盆地一带）。  地层名片： 龙潭组（含煤陆相）、长兴组（浅海石灰岩、生物礁）。  史前景色： 你将置身于极其湿润的热带岛屿。海滨是极其繁茂的华夏植物群（Cathaysian Flora），这里是石炭纪大雨林崩塌后，全球最后的“热带雨林避难所”。高耸的**大羽羊齿（Giganopteris）*具有皮革般的质感，鳞木和芦木高耸入云，林间空气湿热，蜻蜓掠过水面。 往海边看去，清澈的浅海中发育着极其壮观的*大壁珊瑚礁与海绵礁。无数的䗴类（Fusulinids，一种指甲盖大小的巨型单细胞有孔虫）密密麻麻地铺满海底，腕足动物（如产品类 brachiopods）在礁石上招摇。  重要事件： 峨眉山大火成岩省（Emeishan LIP）爆发。在二叠纪中期（约2.6亿年前），今天的中国西南地区地裂大开，上万平方公里的炽热玄武岩岩浆喷涌而出，海水沸腾，烟雾蔽日，造成了二叠纪中期的生物灭绝事件（瓜达鲁普统灭绝）。   📍 第二站：乌拉尔缝合带与哈萨克斯坦（步入超大陆） 空间坐标： 劳亚大...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/23/%E5%85%83%E5%8F%A4%E5%AE%99%EF%BC%8C%E5%9C%B0%E7%90%83%E5%81%B6%E7%A3%81%E5%9C%BA%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%9B%9B%E6%9E%81%E7%A3%81%E5%9C%BA%E7%9A%84%E4%BA%8B%E4%BB%B6/" title="元古宙，地球偶磁场转化为四极磁场的事件">元古宙，地球偶磁场转化为四极磁场的事件</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-22T17:15:20.000Z" title="Created 2026-05-23 01:15:20">2026-05-23</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/ai%E5%9B%9E%E7%AD%94/">ai回答</a></span></div><div class="content">问：元古宙，地球偶磁场转化为四极磁场的事件元古宙（Proterozoic，约25–5.4亿年前）地磁场从偶极（dipole）转变为四极（quadrupolar）的“事件”并非一个有明确命名、全球公认的地质事件，而是一个古地磁学中的科学假设与争议话题，主要源于对前寒武纪古地磁数据的不同解读。 ui.adsabs.harvard.edu +1 主要假设背景（James W. Sears等人的四极子模型）传统古地磁学假设地球磁场长期以**地心轴向偶极子（Geocentric Axial Dipole, GAD）**为主导，这也是重建古大陆位置的基础。 2019年左右，地质学家James W. Sears提出“Proterozoic Earth quadrupolar model”：在元古宙（尤其是中-新元古宙），由于固体内核较小或尚未充分生长，地球发电机（geodynamo）可能在核幔边界（CMB）附近一个薄的对流壳层中运行，产生**非轴向正交四极子场（normal-tesseral quadrupole, NTQ）**主导的磁场，而非偶极子。ui.adsabs.harvard.edu...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/18/%E5%86%A5%E5%8F%A4%E5%AE%99%EF%BC%9A%E7%94%9F%E5%91%BD%E5%A4%A7%E9%80%83%E4%BA%A1/" title="冥古宙：生命大逃亡">冥古宙：生命大逃亡</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-18T14:02:05.000Z" title="Created 2026-05-18 22:02:05">2026-05-18</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/">生命起源</a></span></div><div class="content"> # 第1章：创世坠落 (Genesis Crash)  这是人类感官无法处理的色彩：天空不是蓝色，而是由高浓度二氧化碳、水蒸气和硫化物交织而成的暗橙色。 我感受到的第一件事不是撞击，而是维度的崩塌。 “空间石”在推进器的超载中碎裂了。在飞船穿过那颗坍缩超新星遗迹的瞬间，物理法则像被揉皱的草稿纸。我眼睁睁看着操作台上的物理按键在我视线中迅速“膨胀”——不，是我在缩小。这种缩小并非平滑的过程，而是一连串剧烈的、带有撕裂感的降维震荡。我的骨骼发出密集的爆裂声，视网膜被溢出的辐射光斑占满。 当座舱玻璃碎裂时，我并没有被抛入真空，而是坠入了地狱的子宫。 01. 熔岩地貌的宏观压抑坠落点是地表的一处玄武岩孤岛，四周被翻滚的岩浆海洋包围。冥古宙初期的地球，岩浆的红光映照着低垂的铅色云层，空气浓稠得近乎流体。 由于体型缩减到了微米级，重力对我而言呈现出一种诡异的特性。我没有像重物一样砸碎在岩石上，而是像一片带有质量的尘埃，被灼热的上升气流托举、翻转，最后撞在一块刚冷却的晶体棱角上。 “痛……” 这种痛苦不是针刺，而是全身每一个细胞都在被超临界二氧化碳剥离。缩小后的防护服已经损坏，表面的纳米涂层...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/18/%E4%BA%8C%E5%8F%A0%E7%BA%AA-%E4%B8%89%E5%8F%A0%E7%BA%AA%EF%BC%9A%E9%80%83%E4%BA%A1%E4%BA%8C%E5%8F%A0%E7%BA%AA/" title="二叠纪-三叠纪：逃亡二叠纪">二叠纪-三叠纪：逃亡二叠纪</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-18T13:15:12.000Z" title="Created 2026-05-18 21:15:12">2026-05-18</time></span></div><div class="content">第一章：红土上的第一步二叠纪晚期，约2.58亿年前 盘古大陆东部（今华南古板块区域） 飞船坠落时的撞击几乎要把我的五脏六腑震碎。 零号残响号像一颗燃烧的陨石划过二叠纪的天空，在一片广阔的红土平原上犁出一道长达数百米的焦黑沟壑，最终重重卡进一道干裂的河床。舱内警报声刺耳到几乎失真，AI的声音断断续续： “……磁场风暴……主系统即将永久休眠……研究员……外部环境……二叠纪晚期……请……立即……” 我咬紧牙关，抓起应急防护服、便携氧气瓶、能量棒和采样枪，强行手动开启了已经变形的舱门。 热浪像一记重拳砸在脸上。外面是45℃以上的地狱。空气干燥得像砂纸，带着淡淡的硫磺和植物腐烂的混合气味。天空呈现出一种不健康的橙红色，太阳比现代更大、更刺眼。 我踏出舱门的第一步，靴子就深深陷进干燥的红土里。眼前是一片我从未在任何纪录片里见过的景象—— 广阔的Glossopteris（舌羊齿）森林在季风过后显得有些萧瑟。高大的舌状叶片在热风中沙沙作响，许多叶片边缘已经发黄。地面覆盖着厚厚的落叶层，偶尔能看到昆虫在其中爬行——有些昆虫体型大得惊人，翅膀展开足有半米。远处，一群中大型二齿兽类（Dicynodon...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/17/%E5%8A%A8%E7%89%A9%E7%95%8C%20Animalia/" title="动物界 Animalia">动物界 Animalia</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-17T10:06:10.000Z" title="Created 2026-05-17 18:06:10">2026-05-17</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/">古生物学</a></span></div><div class="content">动物界 Animalia多孔动物门 Porifera（并系）&gt;5.4古杯动物门 Archaeocyatha5.2真后生动物 Eumetazoa栉水母（板）动物门 Ctenophora  5.4    副同源异形基因动物 ParaHoxozoa- 扁盘动物门 Placozoa  	- 未知  - 刺胞动物门 Cnidaria  	- 14? 或&gt;5.4   †三叶动物门 Trilobozoa  5.4   两侧对称动物 Bilateria  †前分节动物门 Proarticulata  5.4   异无腔动物门 Xenacoelomorpha  未知   肾管动物 Nephrozoa  后口动物 Deuterostomia  脊索动物门 Chordata   5.4     步带动物 Ambulacraria  棘皮动物门 Echinodermata   5.4     半索动物门 Hemichordata  5.18       原口动物 Protostomia  蜕皮动物 Ecdysozoa  有棘动物Scalidophora  铠甲动物门 Loricifera  ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/17/%E6%97%B6%E9%97%B4%E4%B9%8B%E5%90%8E%EF%BC%8C%E5%86%A5%E5%8F%A4%E4%B9%8B%E5%89%8D/" title="时间之后，冥古之前">时间之后，冥古之前</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-16T17:46:10.000Z" title="Created 2026-05-17 01:46:10">2026-05-17</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%9C%B0%E8%B4%A8%E5%AD%A6/">地质学</a></span></div><div class="content">城市的繁荣，点亮了千家万户。光污染使得我们难以看到璀璨星河。面对这浩瀚宇宙——我（们）都想过两个问题。其一——宇宙位于哪里？这个问题，我最早是在初中的时候思考的，当时大致的思路是——我们站在地球上，地球围绕着太阳转（公转），太阳位于太阳系的中心，其本身位于银河系的一条旋臂上，绕着银河系公转。银河系又是宇宙空间中的“尘埃”，这样的星系数不胜数。但宇宙位于哪里了。 我想象不到宇宙的外面，就像我（目前）想不出“四维直角坐标系”。宇宙到底处于什么样的“空间”呢？这个“空间”又是怎么来的呢？ 这一切都是迷茫的，虚拟的。过去5千年的王朝更替，功成名就感觉就是飘渺的，如今，个人的春风得意，屈辱委屈也变得浮空。 当然，如果我们不去想这个问题，我们的生活（某些方面）真实而生动。宇宙创造了物理规则，赋予了时间和空间，给予了能量。无机产生了有机，有机产生了生命。人类利用“声光热力电”发展了文明。 其二是宇宙是怎么来的。这个问题早在作者出生前就被提前并且广泛接受了。 这世间的一切都始于“奇点”的剧烈膨胀——宇宙大爆炸。 17世纪，英国的夜晚，牛顿的“万有引力定律”也将视角望向了宇宙。在他的理论中：宇宙是...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/16/hello-world/" title="Hello World">Hello World</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-16T15:31:41.214Z" title="Created 2026-05-16 23:31:41">2026-05-16</time></span></div><div class="content">Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;  More info: Writing Run server1$ hexo server  More info: Server Generate static files1$ hexo generate  More info: Generating Deploy to remote sites1$ hexo deploy  More info: Deployment </div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">小风ventus</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">8</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">7</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://space.bilibili.com/1362301665?spm_id_from=333.1007.0.0"><i class="fab fa-bilibili"></i><span>关注我的bilibili</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://space.bilibili.com/1362301665" target="_blank" title="fab fa-bilibili"><i class="Bilibili"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">《过往46亿年》更新中。<br> 目标：暑假写完第一卷！</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/24/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/" title="生命起源">生命起源</a><time datetime="2026-05-23T17:11:56.000Z" title="Created 2026-05-24 01:11:56">2026-05-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/23/%E3%80%8A%E9%9B%B6%E5%8F%B7%E6%AE%8B%E5%93%8D%EF%BC%9A%E5%BE%AE%E5%B0%98%E7%BA%AA%E5%85%833%EF%BC%9A%E7%A9%BF%E8%B6%8A%E4%BA%8C%E5%8F%A0%E7%BA%AA%E3%80%8B/" title="《零号残响：微尘纪元3：穿越二叠纪》">《零号残响：微尘纪元3：穿越二叠纪》</a><time datetime="2026-05-22T17:36:38.000Z" title="Created 2026-05-23 01:36:38">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/23/%E5%85%83%E5%8F%A4%E5%AE%99%EF%BC%8C%E5%9C%B0%E7%90%83%E5%81%B6%E7%A3%81%E5%9C%BA%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%9B%9B%E6%9E%81%E7%A3%81%E5%9C%BA%E7%9A%84%E4%BA%8B%E4%BB%B6/" title="元古宙，地球偶磁场转化为四极磁场的事件">元古宙，地球偶磁场转化为四极磁场的事件</a><time datetime="2026-05-22T17:15:20.000Z" title="Created 2026-05-23 01:15:20">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/18/%E5%86%A5%E5%8F%A4%E5%AE%99%EF%BC%9A%E7%94%9F%E5%91%BD%E5%A4%A7%E9%80%83%E4%BA%A1/" title="冥古宙：生命大逃亡">冥古宙：生命大逃亡</a><time datetime="2026-05-18T14:02:05.000Z" title="Created 2026-05-18 22:02:05">2026-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/18/%E4%BA%8C%E5%8F%A0%E7%BA%AA-%E4%B8%89%E5%8F%A0%E7%BA%AA%EF%BC%9A%E9%80%83%E4%BA%A1%E4%BA%8C%E5%8F%A0%E7%BA%AA/" title="二叠纪-三叠纪：逃亡二叠纪">二叠纪-三叠纪：逃亡二叠纪</a><time datetime="2026-05-18T13:15:12.000Z" title="Created 2026-05-18 21:15:12">2026-05-18</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
+}</script><meta name="generator" content="Hexo 8.1.2"></head><body><div class="page" id="body-wrap"><header class="full_page" id="page-header" style="background-image: url(/img/cover.jpg);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">自然理科</span></a></span><div id="menus"></div></nav><div id="site-info"><h1 id="site-title">自然理科</h1><div id="site_social_icons"><a class="social-icon" href="https://space.bilibili.com/1362301665" target="_blank" title="fab fa-bilibili"><i class="Bilibili"></i></a></div></div><div id="scroll-down"><i class="fas fa-angle-down scroll-down-effects"></i></div></header><main class="layout" id="content-inner"><div class="recent-posts nc" id="recent-posts"><div class="recent-post-items"><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/24/%E5%8E%9F%E5%88%9B%E7%BB%BC%E8%BF%B0%E2%80%94%E2%80%94%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/" title="生命起源">生命起源</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-23T17:11:56.000Z" title="Created 2026-05-24 01:11:56">2026-05-24</time></span></div><div class="content">前言如果说生物学是一顶皇冠，那么生命起源（Abiogenesis或origin of life）可以说是其中最耀眼的明珠。这一话题贯穿了人类整个科学史，从古代朴素的猜想到现代生物化学实验的探索，经历了漫长而激烈的争论。 生命起源理论的发展过程 生命起源理论的发展大致可分为2个转变： （1）自然发生说（无生源论，自生论）——生源说 （2）原始汤假说——碱性热液喷口假说  自然发生说（无生源论，自生论，spontaneous generation）古人最早提出的生命起源思想是自然发生说。如，先秦时期《礼记·月令》记载“大暑之日，腐草为萤”，《荀子·劝学》记载“肉腐出虫，鱼枯生蠹”，古希腊“博学”家亚里士多德（Aristotle）所说“鱼出泥砂”。23这一观点认为，某些动物可以从腐烂的有机物、无机物或特定环境中直接、快速地自然产生。 总得来说这一思想的核心是：生命可以直接从非生命物质中自发产生。1 自然发生说在中世纪和文艺复兴时期依然长期占据主导地位，被视为“常识”，甚至被宗教和哲学所强化。直到17-19世纪，实验科学的兴起才开始对其发起系统挑战。    图片：自然发生说可信度的变迁。...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/23/%E5%85%83%E5%8F%A4%E5%AE%99%EF%BC%8C%E5%9C%B0%E7%90%83%E5%81%B6%E7%A3%81%E5%9C%BA%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%9B%9B%E6%9E%81%E7%A3%81%E5%9C%BA%E7%9A%84%E4%BA%8B%E4%BB%B6/" title="元古宙，地球偶磁场转化为四极磁场的事件">元古宙，地球偶磁场转化为四极磁场的事件</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-22T17:15:20.000Z" title="Created 2026-05-23 01:15:20">2026-05-23</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/ai%E5%9B%9E%E7%AD%94/">ai回答</a></span></div><div class="content">问：元古宙，地球偶磁场转化为四极磁场的事件元古宙（Proterozoic，约25–5.4亿年前）地磁场从偶极（dipole）转变为四极（quadrupolar）的“事件”并非一个有明确命名、全球公认的地质事件，而是一个古地磁学中的科学假设与争议话题，主要源于对前寒武纪古地磁数据的不同解读。 ui.adsabs.harvard.edu +1 主要假设背景（James W. Sears等人的四极子模型）传统古地磁学假设地球磁场长期以**地心轴向偶极子（Geocentric Axial Dipole, GAD）**为主导，这也是重建古大陆位置的基础。 2019年左右，地质学家James W. Sears提出“Proterozoic Earth quadrupolar model”：在元古宙（尤其是中-新元古宙），由于固体内核较小或尚未充分生长，地球发电机（geodynamo）可能在核幔边界（CMB）附近一个薄的对流壳层中运行，产生**非轴向正交四极子场（normal-tesseral quadrupole, NTQ）**主导的磁场，而非偶极子。ui.adsabs.harvard.edu...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/18/%E3%80%8A%E9%9B%B6%E5%8F%B7%E6%AE%8B%E5%93%8D%EF%BC%9A%E5%BE%AE%E5%B0%98%E7%BA%AA%E5%85%831%EF%BC%9A%E5%86%A5%E5%8F%A4%E5%AE%99%EF%BC%9A%E7%94%9F%E5%91%BD%E5%A4%A7%E9%80%83%E4%BA%A1%E3%80%8B/" title="《零号残响：微尘纪元1：冥古宙：生命大逃亡》">《零号残响：微尘纪元1：冥古宙：生命大逃亡》</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-18T14:02:05.000Z" title="Created 2026-05-18 22:02:05">2026-05-18</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/">生命起源</a></span></div><div class="content"> # 第1章：创世坠落 (Genesis Crash)  这是人类感官无法处理的色彩：天空不是蓝色，而是由高浓度二氧化碳、水蒸气和硫化物交织而成的暗橙色。 我感受到的第一件事不是撞击，而是维度的崩塌。 “空间石”在推进器的超载中碎裂了。在飞船穿过那颗坍缩超新星遗迹的瞬间，物理法则像被揉皱的草稿纸。我眼睁睁看着操作台上的物理按键在我视线中迅速“膨胀”——不，是我在缩小。这种缩小并非平滑的过程，而是一连串剧烈的、带有撕裂感的降维震荡。我的骨骼发出密集的爆裂声，视网膜被溢出的辐射光斑占满。 当座舱玻璃碎裂时，我并没有被抛入真空，而是坠入了地狱的子宫。 01. 熔岩地貌的宏观压抑坠落点是地表的一处玄武岩孤岛，四周被翻滚的岩浆海洋包围。冥古宙初期的地球，岩浆的红光映照着低垂的铅色云层，空气浓稠得近乎流体。 由于体型缩减到了微米级，重力对我而言呈现出一种诡异的特性。我没有像重物一样砸碎在岩石上，而是像一片带有质量的尘埃，被灼热的上升气流托举、翻转，最后撞在一块刚冷却的晶体棱角上。 “痛……” 这种痛苦不是针刺，而是全身每一个细胞都在被超临界二氧化碳剥离。缩小后的防护服已经损坏，表面的纳米涂层...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/18/%E3%80%8A%E9%9B%B6%E5%8F%B7%E6%AE%8B%E5%93%8D%EF%BC%9A%E5%BE%AE%E5%B0%98%E7%BA%AA%E5%85%833%EF%BC%9A%E7%A9%BF%E8%B6%8A%E4%BA%8C%E5%8F%A0%E7%BA%AA%E3%80%8B/" title="《零号残响：微尘纪元3：穿越二叠纪》">《零号残响：微尘纪元3：穿越二叠纪》</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-18T13:15:12.000Z" title="Created 2026-05-18 21:15:12">2026-05-18</time></span></div><div class="content">📍 第一站：华南热带微大陆（东亚启程点） 空间坐标： 赤道附近、古特提斯洋东侧的孤岛（即今天的中国浙江长兴、四川盆地一带）。  地层名片： 龙潭组（含煤陆相）、长兴组（浅海石灰岩、生物礁）。  史前景色： 你将置身于极其湿润的热带岛屿。海滨是极其繁茂的华夏植物群（Cathaysian Flora），这里是石炭纪大雨林崩塌后，全球最后的“热带雨林避难所”。高耸的**大羽羊齿（Giganopteris）*具有皮革般的质感，鳞木和芦木高耸入云，林间空气湿热，蜻蜓掠过水面。 往海边看去，清澈的浅海中发育着极其壮观的*大壁珊瑚礁与海绵礁。无数的䗴类（Fusulinids，一种指甲盖大小的巨型单细胞有孔虫）密密麻麻地铺满海底，腕足动物（如产品类 brachiopods）在礁石上招摇。  重要事件： 峨眉山大火成岩省（Emeishan LIP）爆发。在二叠纪中期（约2.6亿年前），今天的中国西南地区地裂大开，上万平方公里的炽热玄武岩岩浆喷涌而出，海水沸腾，烟雾蔽日，造成了二叠纪中期的生物灭绝事件（瓜达鲁普统灭绝）。   📍 第二站：乌拉尔缝合带与哈萨克斯坦（步入超大陆） 空间坐标： 劳亚大...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/17/%E5%8A%A8%E7%89%A9%E7%95%8C%20Animalia/" title="动物界 Animalia">动物界 Animalia</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-17T10:06:10.000Z" title="Created 2026-05-17 18:06:10">2026-05-17</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/">古生物学</a></span></div><div class="content">动物界 Animalia多孔动物门 Porifera（并系）&gt;5.4古杯动物门 Archaeocyatha5.2真后生动物 Eumetazoa栉水母（板）动物门 Ctenophora  5.4    副同源异形基因动物 ParaHoxozoa- 扁盘动物门 Placozoa  	- 未知  - 刺胞动物门 Cnidaria  	- 14? 或&gt;5.4   †三叶动物门 Trilobozoa  5.4   两侧对称动物 Bilateria  †前分节动物门 Proarticulata  5.4   异无腔动物门 Xenacoelomorpha  未知   肾管动物 Nephrozoa  后口动物 Deuterostomia  脊索动物门 Chordata   5.4     步带动物 Ambulacraria  棘皮动物门 Echinodermata   5.4     半索动物门 Hemichordata  5.18       原口动物 Protostomia  蜕皮动物 Ecdysozoa  有棘动物Scalidophora  铠甲动物门 Loricifera  ...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/17/%E5%8E%9F%E5%88%9B%E7%BB%BC%E8%BF%B0%E2%80%94%E2%80%94%E6%97%B6%E9%97%B4%E4%B9%8B%E5%90%8E%EF%BC%8C%E5%86%A5%E5%8F%A4%E4%B9%8B%E5%89%8D/" title="时间之后，冥古之前">时间之后，冥古之前</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-16T17:46:10.000Z" title="Created 2026-05-17 01:46:10">2026-05-17</time></span><span class="article-meta"><span class="article-meta-separator">|</span><i class="fas fa-inbox"></i><a class="article-meta__categories" href="/categories/%E5%9C%B0%E8%B4%A8%E5%AD%A6/">地质学</a></span></div><div class="content">城市的繁荣，点亮了千家万户。光污染使得我们难以看到璀璨星河。面对这浩瀚宇宙——我（们）都想过两个问题。其一——宇宙位于哪里？这个问题，我最早是在初中的时候思考的，当时大致的思路是——我们站在地球上，地球围绕着太阳转（公转），太阳位于太阳系的中心，其本身位于银河系的一条旋臂上，绕着银河系公转。银河系又是宇宙空间中的“尘埃”，这样的星系数不胜数。但宇宙位于哪里了。 我想象不到宇宙的外面，就像我（目前）想不出“四维直角坐标系”。宇宙到底处于什么样的“空间”呢？这个“空间”又是怎么来的呢？ 这一切都是迷茫的，虚拟的。过去5千年的王朝更替，功成名就感觉就是飘渺的，如今，个人的春风得意，屈辱委屈也变得浮空。 当然，如果我们不去想这个问题，我们的生活（某些方面）真实而生动。宇宙创造了物理规则，赋予了时间和空间，给予了能量。无机产生了有机，有机产生了生命。人类利用“声光热力电”发展了文明。 其二是宇宙是怎么来的。这个问题早在作者出生前就被提前并且广泛接受了。 这世间的一切都始于“奇点”的剧烈膨胀——宇宙大爆炸。 17世纪，英国的夜晚，牛顿的“万有引力定律”也将视角望向了宇宙。在他的理论中：宇宙是...</div></div></div><div class="recent-post-item"><div class="recent-post-info no-cover"><a class="article-title" href="/2026/05/16/hello-world/" title="Hello World">Hello World</a><div class="article-meta-wrap"><span class="post-meta-date"><i class="far fa-calendar-alt"></i><span class="article-meta-label">Created</span><time datetime="2026-05-16T15:31:41.214Z" title="Created 2026-05-16 23:31:41">2026-05-16</time></span></div><div class="content">Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick StartCreate a new post1$ hexo new &quot;My New Post&quot;  More info: Writing Run server1$ hexo server  More info: Server Generate static files1$ hexo generate  More info: Generating Deploy to remote sites1$ hexo deploy  More info: Deployment </div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">小风ventus</div><div class="author-info-description"></div><div class="site-data"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">7</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">9</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">4</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://space.bilibili.com/1362301665?spm_id_from=333.1007.0.0"><i class="fab fa-bilibili"></i><span>关注我的bilibili</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://space.bilibili.com/1362301665" target="_blank" title="fab fa-bilibili"><i class="Bilibili"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>Announcement</span></div><div class="announcement_content">《过往46亿年》更新中。<br> 目标：暑假写完第一卷！</div></div><div class="sticky_layout"><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>Recent Posts</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/24/%E5%8E%9F%E5%88%9B%E7%BB%BC%E8%BF%B0%E2%80%94%E2%80%94%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/" title="生命起源">生命起源</a><time datetime="2026-05-23T17:11:56.000Z" title="Created 2026-05-24 01:11:56">2026-05-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/23/%E5%85%83%E5%8F%A4%E5%AE%99%EF%BC%8C%E5%9C%B0%E7%90%83%E5%81%B6%E7%A3%81%E5%9C%BA%E8%BD%AC%E5%8C%96%E4%B8%BA%E5%9B%9B%E6%9E%81%E7%A3%81%E5%9C%BA%E7%9A%84%E4%BA%8B%E4%BB%B6/" title="元古宙，地球偶磁场转化为四极磁场的事件">元古宙，地球偶磁场转化为四极磁场的事件</a><time datetime="2026-05-22T17:15:20.000Z" title="Created 2026-05-23 01:15:20">2026-05-23</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/18/%E3%80%8A%E9%9B%B6%E5%8F%B7%E6%AE%8B%E5%93%8D%EF%BC%9A%E5%BE%AE%E5%B0%98%E7%BA%AA%E5%85%831%EF%BC%9A%E5%86%A5%E5%8F%A4%E5%AE%99%EF%BC%9A%E7%94%9F%E5%91%BD%E5%A4%A7%E9%80%83%E4%BA%A1%E3%80%8B/" title="《零号残响：微尘纪元1：冥古宙：生命大逃亡》">《零号残响：微尘纪元1：冥古宙：生命大逃亡》</a><time datetime="2026-05-18T14:02:05.000Z" title="Created 2026-05-18 22:02:05">2026-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/18/%E3%80%8A%E9%9B%B6%E5%8F%B7%E6%AE%8B%E5%93%8D%EF%BC%9A%E5%BE%AE%E5%B0%98%E7%BA%AA%E5%85%833%EF%BC%9A%E7%A9%BF%E8%B6%8A%E4%BA%8C%E5%8F%A0%E7%BA%AA%E3%80%8B/" title="《零号残响：微尘纪元3：穿越二叠纪》">《零号残响：微尘纪元3：穿越二叠纪》</a><time datetime="2026-05-18T13:15:12.000Z" title="Created 2026-05-18 21:15:12">2026-05-18</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/05/17/%E5%8A%A8%E7%89%A9%E7%95%8C%20Animalia/" title="动物界 Animalia">动物界 Animalia</a><time datetime="2026-05-17T10:06:10.000Z" title="Created 2026-05-17 18:06:10">2026-05-17</time></div></div></div></div><div class="card-widget card-categories"><div class="item-headline">
             <i class="fas fa-folder-open"></i>
             <span>Categories</span>
             
           </div>
           <ul class="card-category-list" id="aside-cat-list">
             <li class="card-category-list-item "><a class="card-category-list-link" href="/categories/ai%E5%9B%9E%E7%AD%94/"><span class="card-category-list-name">ai回答</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/"><span class="card-category-list-name">古生物学</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E5%9C%B0%E8%B4%A8%E5%AD%A6/"><span class="card-category-list-name">地质学</span><span class="card-category-list-count">1</span></a></li><li class="card-category-list-item "><a class="card-category-list-link" href="/categories/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/"><span class="card-category-list-name">生命起源</span><span class="card-category-list-count">1</span></a></li>
-          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/%E5%AE%87%E5%AE%99%E5%AD%A6/" style="font-size: 1.1em; color: #999">宇宙学</a> <a href="/tags/%E5%8F%A4%E7%94%9F%E7%89%A9-%E6%95%85%E4%BA%8B/" style="font-size: 1.1em; color: #999">古生物 故事</a> <a href="/tags/%E5%88%86%E7%B1%BB%E5%AD%A6/" style="font-size: 1.1em; color: #999">分类学</a> <a href="/tags/%E5%B0%8F%E8%AF%B4-gemini/" style="font-size: 1.1em; color: #999">小说 gemini</a> <a href="/tags/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/" style="font-size: 1.5em; color: #99a9bf">古生物学</a> <a href="/tags/grok/" style="font-size: 1.1em; color: #999">grok</a> <a href="/tags/%E5%8E%9F%E5%88%9B/" style="font-size: 1.1em; color: #999">原创</a></div></div><div class="card-widget card-archives">
+          </ul></div><div class="card-widget card-tags"><div class="item-headline"><i class="fas fa-tags"></i><span>Tags</span></div><div class="card-tag-cloud"><a href="/tags/%E5%8E%9F%E5%88%9B/" style="font-size: 1.1em; color: #999">原创</a> <a href="/tags/%E5%88%86%E7%B1%BB%E5%AD%A6/" style="font-size: 1.1em; color: #999">分类学</a> <a href="/tags/%E5%8E%9F%E5%88%9B%E7%BB%BC%E8%BF%B0/" style="font-size: 1.3em; color: #99a1ac">原创综述</a> <a href="/tags/%E5%AE%87%E5%AE%99%E5%AD%A6/" style="font-size: 1.1em; color: #999">宇宙学</a> <a href="/tags/grok/" style="font-size: 1.1em; color: #999">grok</a> <a href="/tags/%E7%94%9F%E5%91%BD%E8%B5%B7%E6%BA%90/" style="font-size: 1.1em; color: #999">生命起源</a> <a href="/tags/%E5%8F%A4%E7%94%9F%E7%89%A9%E5%AD%A6/" style="font-size: 1.5em; color: #99a9bf">古生物学</a> <a href="/tags/%E6%95%85%E4%BA%8B/" style="font-size: 1.1em; color: #999">故事</a> <a href="/tags/gemini/" style="font-size: 1.1em; color: #999">gemini</a></div></div><div class="card-widget card-archives">
     <div class="item-headline">
       <i class="fas fa-archive"></i>
       <span>Archives</span>
@@ -348,48 +168,9 @@
             <span class="card-archive-list-date">
               May 2026
             </span>
-            <span class="card-archive-list-count">8</span>
+            <span class="card-archive-list-count">7</span>
           </a>
         </li>
       
     </ul>
-  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">8</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-05-23T17:22:22.795Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 小风ventus</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script src="https://cdn.jsdelivr.net/gh/yremp/yremp-js@1.5/sakura.js"></script><script src="/js/snow.js"></script><script>
-  (function(){
-    // 1. 创建倒计时容器
-    var countdownEl = document.createElement('div');
-    countdownEl.id = 'custom-countdown';
-    countdownEl.innerHTML = '正在初始化...';
-
-    // 2. 目标：把倒计时塞进大图中间的 site-info 区域
-    function injectCountdown() {
-      var siteInfo = document.querySelector('#site-info');
-      if (siteInfo && !document.getElementById('custom-countdown')) {
-        siteInfo.appendChild(countdownEl);
-      }
-    }
-
-    // 3. 计算逻辑
-    var end = new Date('2026/06/07 00:00:00').getTime(); 
-    function update() {
-      var now = new Date().getTime();
-      var t = end - now;
-      if (t > 0) {
-        var d = Math.floor(t / 86400000);
-        var h = Math.floor((t / 3600000) % 24);
-        var m = Math.floor((t / 60000) % 60);
-        var s = Math.floor((t / 1000) % 60);
-        countdownEl.innerHTML = "🏁 距离 高考: " + d + "天 " + h + "时 " + m + "分 " + s + "秒";
-      } else {
-        countdownEl.innerHTML = "🚀 高考已开启！加油！";
-      }
-    }
-
-    // 执行注入和更新
-    setInterval(update, 1000);
-    // 延迟一点点注入，确保页面元素加载完了
-    setTimeout(injectCountdown, 500); 
-    // 针对 PJAX（切换页面不刷新）的适配
-    document.addEventListener('pjax:complete', injectCountdown);
-  })();
-</script>
-<script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
+  </div><div class="card-widget card-webinfo"><div class="item-headline"><i class="fas fa-chart-line"></i><span>Website Info</span></div><div class="webinfo"><div class="webinfo-item"><div class="item-name">Article Count :</div><div class="item-count">7</div></div><div class="webinfo-item"><div class="item-name">Unique Visitors :</div><div class="item-count" id="busuanzi_value_site_uv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Page Views :</div><div class="item-count" id="busuanzi_value_site_pv"><i class="fa-solid fa-spinner fa-spin"></i></div></div><div class="webinfo-item"><div class="item-name">Last Update :</div><div class="item-count" id="last-push-date" data-lastPushDate="2026-05-25T11:22:33.280Z"><i class="fa-solid fa-spinner fa-spin"></i></div></div></div></div></div></div></main><footer id="footer"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2025 - 2026 By 小风ventus</span><span class="framework-info"><span>Framework </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 8.1.2</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.5.4</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="darkmode" type="button" title="Toggle Between Light and Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle Between Single-column and Double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="Settings"><i class="fas fa-cog fa-spin"></i></button><button id="go-up" type="button" title="Back to Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.5.4"></script><script src="/js/main.js?v=5.5.4"></script><div class="js-pjax"></div><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
